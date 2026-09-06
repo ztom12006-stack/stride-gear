@@ -55,4 +55,3 @@ GitHub 上的检查工作流只验证代码，不自动改变线上数据或访�
 
 穿搭参考：INFECTED Store / Pexels，https://www.pexels.com/photo/28774702/ 。
 `public/ocr` 包含 Tesseract.js worker、Tesseract.js-core 及 eng / chi_sim 识别模型，对应许可证随源码保留。
-
