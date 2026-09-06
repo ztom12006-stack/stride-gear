@@ -1,47 +1,35 @@
 # STRIDE · 运动装备管家
 
-私人运动装备管理应用。线上访问：https://stride-kit-studio.ztom12006.chatgpt.site
+纯 GitHub Pages 版本，不使用 ChatGPT 托管、数据库或图片存储。
 
-## 功能
+## 功能与保存方式
 
-- 装备信息、实物图片、归档与使用记录
-- 运动月历，按周/月/年查看次数、里程、时长及活跃天数
-- 每日持有、每次使用、每公里成本
-- 订单截图中英文 OCR、订单文字、Excel/CSV/TSV 导入
-- 字段匹配、单件实付核对、数量拆分、重复订单提示、批量入库
-- 风格化三维穿搭及身高体重、脸型调整
+装备管理与图片、运动月历和周期统计、成本分摊、穿搭实验室、订单截图 OCR / 文字 / Excel / CSV 导入。
+记录及压缩后的图片存入当前浏览器的 IndexedDB。每位访客独立保存，无需登录，不跨设备自动同步。
+页面支持导出与恢复 JSON 备份（包含装备图片）。清理站点数据或隐私浏览结束可能导致数据丢失，请定期备份。
+旧网站的记录不会自动迁移到新域名；本仓库不包含个人记录或订单数据。
 
-## 技术与数据
+## 本地运行与检查
 
-React 19、Vinext / Vite、Cloudflare Workers、D1、R2。
-当前网站仅供所有者访问。D1 保存装备和运动记录，R2 保存装备图片。订单截图在浏览器内识别，不上传原始截图；用户确认后仅保存装备字段。
-个人记录、订单、用户上传图片不进入 Git 仓库。数据库迁移一经发布不可改写。
-
-## 本地运行
-
-需要 Node.js >= 22.13。
+需要 Node.js 24。
 
 ```sh
 npm ci
-npm run db:generate
-npm run build
-npx wrangler d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_optimal_gwen_stacy.sql
-npm run dev
-```
-
-访问开发服务输出的网址。请勿在已有数据库上重复执行建表 SQL。
-
-```sh
+npm run dev:pages
 npm run typecheck
 npm test
-npm run build
+npm run build:pages
 ```
 
-## 发布与维护
+构建结果位于 `dist-pages/`，路径前缀为 `/stride-gear/`。
 
-GitHub 用作源码版本管理；在线服务仍需能运行 Workers、D1 和 R2 的部署平台，不能仅用 GitHub Pages 承载。
-现有 Sites 项目由 `.openai/hosting.json` 标识。更新后先运行检查，再保存源代码版本并发布到同一项目，以保留已有数据与网址。
-GitHub 上的检查工作流只验证代码，不自动改变线上数据或访问权限。需要同步仓库时，请在 Codex 中连接 GitHub 并指定目标仓库。
+## GitHub Pages 发布
+
+在仓库 Settings → Pages → Build and deployment 中将 Source 设为 GitHub Actions。
+工作流 `Deploy GitHub Pages` 会在 main 更新时检查并发布，也支持 Actions 页面手动 Run workflow。
+启用并成功发布后，网址为 https://ztom12006-stack.github.io/stride-gear/ 。
+GitHub Free 需要公开仓库才能使用 Pages；私有仓库需要支持 Pages 的付费套餐。
+旧 Workers 代码保留用于历史兼容，Pages 构建不会打包或调用旧数据库、API 或托管服务。
 
 ## 图片及识别资源
 

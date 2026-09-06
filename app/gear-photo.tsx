@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { ImagePlus, LoaderCircle, ImageOff } from 'lucide-react';
 import { uploadGearImage } from '@/lib/images';
+import { assetUrl } from '@/lib/runtime';
 import type { Gear } from '@/lib/model';
 export function GearPhoto({ gear }: { gear: Gear }) {
   const [failed, setFailed] = useState(false);
@@ -14,7 +15,7 @@ export function GearPhoto({ gear }: { gear: Gear }) {
   };
   const src =
     gear.image ||
-    (reference ? `/gear-reference/${images[gear.category]}.jpg` : '');
+    (reference ? assetUrl(`/gear-reference/${images[gear.category]}.jpg`) : '');
   return src && !failed ? (
     <>
       <img

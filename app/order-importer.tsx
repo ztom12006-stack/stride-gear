@@ -1,4 +1,5 @@
 'use client';
+import { assetUrl } from '@/lib/runtime';
 import { useEffect, useRef, useState } from 'react';
 import type { Worker } from 'tesseract.js';
 import {
@@ -146,9 +147,9 @@ export default function OrderImporter({
       setProgress('正在准备中英文识别，首次加载可能需要一些时间…');
       const { createWorker } = await import('tesseract.js');
       const instance = await createWorker(['chi_sim', 'eng'], 1, {
-        workerPath: '/ocr/worker.min.js',
-        corePath: '/ocr',
-        langPath: '/ocr',
+        workerPath: assetUrl('/ocr/worker.min.js'),
+        corePath: assetUrl('/ocr'),
+        langPath: assetUrl('/ocr'),
         workerBlobURL: false,
         logger: (m) => {
           if (m.status === 'recognizing text')
@@ -430,7 +431,7 @@ export default function OrderImporter({
                 支持选择工作表、匹配不同平台列名和读取 Excel
                 内嵌商品图片。日期、单件实付金额缺失时，可在入库前补充。
               </p>
-              <a className="template-link" href="/order-template.csv" download>
+              <a className="template-link" href={assetUrl("/order-template.csv")} download>
                 下载订单导入模板 ↓
               </a>
             </TabsContent>

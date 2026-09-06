@@ -72,6 +72,9 @@ import {
   type Profile,
   type Plan,
 } from '@/lib/model';
+import { isPages, assetUrl } from '@/lib/runtime';
+import { readLocal, writeLocal } from '@/lib/local-state';
+import BackupControls from './backup-controls';
 import Avatar from './avatar';
 import ActivityDashboard from './activity-dashboard';
 import { GearPhoto, PhotoEditor } from './gear-photo';
@@ -216,13 +219,13 @@ export default function GearApp() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/state');
-      const data = (await res.json()) as {
+      const res = isPages ? null : await fetch('/api/state');
+      const data = (isPages ? await readLocal() : await res!.json()) as {
         state: State;
         revision: number;
         error?: string;
       };
-      if (!res.ok) throw Error(data.error);
+      if (res && !res.ok) throw Error(data.error);
       setState(data.state);
       setProfile(data.state.profile);
       setRevision(data.revision);
@@ -249,13 +252,13 @@ export default function GearApp() {
     setSaving(true);
     setError('');
     try {
-      const r = await fetch('/api/state', {
+      const r = isPages ? null : await fetch('/api/state', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ state: next, revision }),
       });
-      const d = (await r.json()) as { revision: number; error?: string };
-      if (!r.ok) throw Error(d.error);
+      const d = (isPages ? await writeLocal(next, revision) : await r!.json()) as { revision: number; error?: string };
+      if (r && !r.ok) throw Error(d.error);
       setState(next);
       setRevision(d.revision);
       setNotice(message);
@@ -436,6 +439,7 @@ export default function GearApp() {
                   </button>
                 </div>
               </div>
+              {isPages && <BackupControls state={state} saving={saving} restore={(next) => save(next, "备份已恢复")} />}
               {revision === 0 && (
                 <div className="demo-notice">
                   当前展示示例装备与运动记录。首次保存后写入你的私人空间，可逐件编辑或归档。
@@ -814,7 +818,7 @@ export default function GearApp() {
                       <p>结合运动目标与预算，探索选购方向。</p>
                     </div>
                     <img
-                      src="/outfit-reference.jpg"
+                      src={assetUrl("/outfit-reference.jpg")}
                       alt="灰色运动服全身搭配参考"
                     />
                     <a

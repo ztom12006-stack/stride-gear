@@ -39,3 +39,5 @@ next-env.d.ts
 *.tsbuildinfo
 /verify.mjs
 /integrate.py
+
+/dist-pages/
