@@ -55,3 +55,7 @@ GitHub Free 需要公开仓库才能使用 Pages；私有仓库需要支持 Page
 这是搭配示意，不进行真实人体形变或尺码预测。旧数据无需迁移，缺少 outfit 字段时使用基础穿搭。
 
 资源出处：U²-Net (https://github.com/xuebinqin/U-2-Net, Apache-2.0)，rembg 模型分发 (https://github.com/danielgatis/rembg)，ONNX Runtime 1.22.0 (https://github.com/microsoft/onnxruntime, MIT)。许可证与运行时第三方声明位于 public/cutout。
+
+## 浏览与角色视图
+
+我的装备采用横向条目，手机上图片与信息在首行、成本统计在次行。穿搭实验室默认显示原创程序建模的 3D 运动角色，可拖动旋转（键盘左右方向键旋转、Home 回正面），提供独立的照片换装视图。3D 使用基础运动服版型显示配色与体型；照片换装保留具体装备的透明图片、位置和大小配置，不把照片宣称为真实三维服装。3D 依赖 WebGL，不支持时可使用照片换装。

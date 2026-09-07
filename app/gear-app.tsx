@@ -76,6 +76,7 @@ import { isPages, assetUrl } from '@/lib/runtime';
 import { readLocal, writeLocal } from '@/lib/local-state';
 import BackupControls from './backup-controls';
 import Doll from './doll';
+import GameCharacter from './game-character';
 import { OutfitPicker } from './outfit-picker';
 import ActivityDashboard from './activity-dashboard';
 import { GearPhoto, PhotoEditor } from './gear-photo';
@@ -297,6 +298,16 @@ export default function GearApp() {
     ) || [];
   function gearCard(g: Gear) {
     const stats = gearStats(g, runs);
+    if (page === 'gear') return (
+      <button className="equipment-row" key={g.id} onClick={() => open('gear', g)}>
+        <span className="equipment-row-photo"><GearPhoto key={g.image || g.category} gear={g} /></span>
+        <span className="equipment-row-name"><small>{g.brand} · {g.sport} / {g.category}</small><strong>{g.name}</strong><span>{g.size || '未填写尺码'}<i />{g.archived ? '已归档' : '使用中'}</span></span>
+        <span className="equipment-row-stat"><small>使用次数</small><b>{stats.uses}<em> 次</em></b></span>
+        <span className="equipment-row-stat"><small>每次成本</small><b>{stats.perUse === null ? '—' : money(stats.perUse)}</b></span>
+        <span className="equipment-row-stat"><small>每日持有成本</small><b>{money(stats.daily)}</b></span>
+        <ChevronRight className="equipment-row-arrow" size={18} />
+      </button>
+    );
     return (
       <button className="gear-card" key={g.id} onClick={() => open('gear', g)}>
         <div
@@ -647,7 +658,7 @@ export default function GearApp() {
                     </button>
                     <span className="muted">{cards.length} 件装备</span>
                   </div>
-                  <div className="gear-grid">{cards.map(gearCard)}</div>
+                  <div className="equipment-list">{cards.map(gearCard)}</div>
                   {!cards.length && (
                     <div className="empty">
                       <Package />
@@ -944,19 +955,13 @@ export default function GearApp() {
                 <div className="studio-layout">
                   <section className="avatar-stage">
                     <div className="stage-label">
-                      <span className="pill">装扮娃娃</span>
+                      <span className="pill">运动角色实验室</span>
                       <span>
                         {profile.height} cm / {profile.weight} kg
                       </span>
                     </div>
-                    <Doll profile={profile} gear={active} onChange={setProfile} />
-                    <div className="stage-footer">
-                      <RotateCw size={16} />
-                      选择装备，调整位置与大小
-                    </div>
-                    <div className="stage-caption">
-                      平面换装用于搭配参考。正面、平铺、透明背景的装备照片效果更好，不用于判断真实合身度。
-                    </div>
+                    <GameCharacter profile={profile} gear={active} />
+                    <div className="stage-caption">选择装备探索配色；切换「照片换装」查看实物图片的搭配。效果用于穿搭参考，不代表真实尺码贴合。</div>
                   </section>
                   <section className="studio-controls">
                     <Tabs defaultValue="outfit">

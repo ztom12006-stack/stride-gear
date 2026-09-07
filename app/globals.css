@@ -2605,3 +2605,51 @@ h3 {
 
 .mini-model .dress-doll { width: 155px; height: 230px; }
 .avatar-stage > .dress-doll { margin-top: 45px; }
+
+/* Equipment rows: compact scanning without losing the product photograph. */
+.equipment-list { display: flex; flex-direction: column; gap: 10px; }
+.equipment-row { display: grid; grid-template-columns: 108px minmax(150px,1fr) repeat(3, 106px) 20px; gap: 20px; align-items: center; width: 100%; padding: 16px 20px 16px 12px; background: #fff; border: 1px solid #e5e8e0; border-radius: 13px; text-align: left; transition: border-color .18s, box-shadow .18s; }
+.equipment-row:hover { border-color: #a6b895; box-shadow: 0 4px 18px #263d2610; }
+.equipment-row:focus-visible { outline: 2px solid #78965c; outline-offset: 3px; }
+.equipment-row-photo { position: relative; display: block; width: 108px; height: 100px; background: #fff; }
+.equipment-row-photo .gear-real-photo { padding: 8px; }
+.equipment-row-photo .reference-label { display: none; }
+.equipment-row-photo .no-gear-photo { gap: 3px; }
+.equipment-row-photo .no-gear-photo span { font-size: 10px; }
+.equipment-row-name { display: flex; flex-direction: column; min-width: 0; gap: 7px; }
+.equipment-row-name > small { color: #87907f; font-size: 11px; line-height: 1.5; }
+.equipment-row-name > strong { font-size: 15px; color: #293629; font-weight: 600; overflow-wrap: anywhere; }
+.equipment-row-name > span { display: flex; align-items: center; gap: 9px; color: #8c9584; font-size: 11px; }
+.equipment-row-name i { width: 3px; height: 3px; background: #bbc2b3; border-radius: 50%; }
+.equipment-row-stat { display: flex; flex-direction: column; gap: 10px; }
+.equipment-row-stat > small { color: #929a88; font-size: 11px; white-space: nowrap; }
+.equipment-row-stat b { font-size: 17px; font-weight: 550; color: #4e6044; font-variant-numeric: tabular-nums; }
+.equipment-row-stat em { font-size: 11px; font-style: normal; color: #939d89; font-weight: 400; }
+.equipment-row-arrow { color: #a4ad99; }
+.character-viewer { margin-top: 70px; }
+.character-view-tabs { display: flex; gap: 5px; width: fit-content; margin: 0 auto; padding: 4px; border: 1px solid #e6e5df; border-radius: 30px; background: #f5f4f0; }
+.character-view-tabs button { padding: 8px 21px; border: 0; background: transparent; border-radius: 24px; font-size: 12px; color: #8a9083; }
+.character-view-tabs button[aria-pressed='true'] { color: #334b2e; background: #fff; box-shadow: 0 2px 6px #00000009; }
+.game-character-canvas { height: 490px; width: 100%; cursor: grab; touch-action: pan-y; }
+.game-character-canvas:active { cursor: grabbing; }
+.game-character-canvas:focus-visible { outline: 2px solid #8ba16f; outline-offset: -3px; border-radius: 12px; }
+.game-character-canvas canvas { display: block; }
+.character-view-note { text-align: center; margin: 0 18px; font-size: 11px; color: #7c8772; }
+.character-viewer > .dress-doll { height: 490px; width: 327px; max-width: 100%; }
+@media(max-width: 1100px) { .equipment-row { grid-template-columns: 90px minmax(140px,1fr) repeat(3,82px) 16px; gap: 12px; } .equipment-row-photo { width: 90px; height: 90px; } .equipment-row-stat b { font-size: 15px; } }
+@media(max-width: 720px) {
+ .equipment-row { grid-template-columns: 76px minmax(0,1fr) 18px; gap: 12px; padding: 12px; }
+ .equipment-row-photo { width: 76px; height: 82px; grid-row: 1; }
+ .equipment-row-name { grid-column: 2; grid-row: 1; gap: 5px; }
+ .equipment-row-name > strong { font-size: 13px; }
+ .equipment-row-name > small { font-size: 10px; }
+ .equipment-row-arrow { grid-column: 3; grid-row: 1; }
+ .equipment-row-stat { grid-row: 2; gap: 4px; padding-top: 10px; border-top: 1px solid #f1f1ed; }
+ .equipment-row-stat:nth-of-type(3) { grid-column: 1; }
+ .equipment-row-stat:nth-of-type(4) { grid-column: 2; justify-self: start; }
+ .equipment-row-stat:nth-of-type(5) { grid-column: 2 / 4; justify-self: end; }
+ .equipment-row-stat > small { font-size: 10px; }
+ .equipment-row-stat b { font-size: 13px; }
+ .game-character-canvas { height: 430px; }
+ .character-viewer > .dress-doll { height: 430px; width: 287px; }
+}
