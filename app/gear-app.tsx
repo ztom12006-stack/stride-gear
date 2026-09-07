@@ -75,7 +75,8 @@ import {
 import { isPages, assetUrl } from '@/lib/runtime';
 import { readLocal, writeLocal } from '@/lib/local-state';
 import BackupControls from './backup-controls';
-import Avatar from './avatar';
+import Doll from './doll';
+import { OutfitPicker } from './outfit-picker';
 import ActivityDashboard from './activity-dashboard';
 import { GearPhoto, PhotoEditor } from './gear-photo';
 import OrderImporter from './order-importer';
@@ -300,9 +301,7 @@ export default function GearApp() {
       <button className="gear-card" key={g.id} onClick={() => open('gear', g)}>
         <div
           className="gear-visual"
-          style={{
-            background: `linear-gradient(140deg,${g.color}28,${g.color}0c)`,
-          }}
+          
         >
           <span className="sport-tag">
             {g.sport} / {g.category}
@@ -613,7 +612,7 @@ export default function GearApp() {
                         <p>随心组合，找到新的可能。</p>
                       </div>
                       <div className="mini-model">
-                        <Avatar profile={state.profile} />
+                        <Doll profile={state.profile} gear={active} />
                       </div>
                       <button onClick={() => setPage('studio')}>
                         进入穿搭实验室 <ArrowUpRight size={18} />
@@ -945,18 +944,18 @@ export default function GearApp() {
                 <div className="studio-layout">
                   <section className="avatar-stage">
                     <div className="stage-label">
-                      <span className="pill">3D 搭配预览</span>
+                      <span className="pill">装扮娃娃</span>
                       <span>
                         {profile.height} cm / {profile.weight} kg
                       </span>
                     </div>
-                    <Avatar profile={profile} />
+                    <Doll profile={profile} gear={active} onChange={setProfile} />
                     <div className="stage-footer">
                       <RotateCw size={16} />
-                      拖动人物，查看不同角度
+                      选择装备，调整位置与大小
                     </div>
                     <div className="stage-caption">
-                      风格化人物与通用服装，用于体型和配色探索，不代表真实尺码或服装贴合效果。
+                      平面换装用于搭配参考。正面、平铺、透明背景的装备照片效果更好，不用于判断真实合身度。
                     </div>
                   </section>
                   <section className="studio-controls">
@@ -967,77 +966,7 @@ export default function GearApp() {
                       </TabsList>
                       <TabsContent value="outfit">
                         <h2>今天，怎么穿？</h2>
-                        <p className="muted">选择已有装备，将配色穿在身上。</p>
-                        {[
-                          ['上装', 'top'],
-                          ['下装', 'bottom'],
-                          ['鞋履', 'shoes'],
-                        ].map(([category, key]) => (
-                          <div className="outfit-category" key={key}>
-                            <h3>
-                              {category}
-                              <input
-                                type="color"
-                                aria-label={category + '颜色'}
-                                value={
-                                  profile[key as 'top' | 'bottom' | 'shoes']
-                                }
-                                onChange={(e) =>
-                                  setProfile({
-                                    ...profile,
-                                    [key]: e.target.value,
-                                  })
-                                }
-                              />
-                            </h3>
-                            {active
-                              .filter((g) => g.category === category)
-                              .map((g) => (
-                                <button
-                                  key={g.id}
-                                  className={
-                                    'outfit-option ' +
-                                    (profile[
-                                      key as 'top' | 'bottom' | 'shoes'
-                                    ] === g.color
-                                      ? 'chosen'
-                                      : '')
-                                  }
-                                  onClick={() =>
-                                    setProfile({ ...profile, [key]: g.color })
-                                  }
-                                >
-                                  <span className="outfit-photo">
-                                    <GearPhoto
-                                      key={g.image || g.category}
-                                      gear={g}
-                                    />
-                                  </span>
-                                  <span>
-                                    {g.name}
-                                    <small>
-                                      {g.size} · {g.brand}
-                                    </small>
-                                  </span>
-                                  {profile[
-                                    key as 'top' | 'bottom' | 'shoes'
-                                  ] === g.color && <Check size={18} />}
-                                </button>
-                              ))}
-                            <small className="muted">
-                              预览通用{category}版型，可自由调整颜色。
-                            </small>
-                          </div>
-                        ))}
-                        <label className="check-label">
-                          <Checkbox
-                            checked={profile.accessory}
-                            onCheckedChange={(v) =>
-                              setProfile({ ...profile, accessory: !!v })
-                            }
-                          />
-                          搭配徒步背包
-                        </label>
+                        <OutfitPicker profile={profile} gear={active} onChange={setProfile} />
                       </TabsContent>
                       <TabsContent value="body">
                         <h2>建立你的运动形象</h2>

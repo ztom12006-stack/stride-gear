@@ -41,3 +41,7 @@ next-env.d.ts
 /integrate.py
 
 /dist-pages/
+
+/public/cutout/*.onnx
+/public/cutout/*.wasm
+/public/cutout/*.mjs

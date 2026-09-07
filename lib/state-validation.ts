@@ -73,6 +73,9 @@ export function validState(s: State) {
     [s.profile.skin, s.profile.top, s.profile.bottom, s.profile.shoes].every(
       color,
     ) &&
-    typeof s.profile.accessory === 'boolean'
+    typeof s.profile.accessory === 'boolean' &&
+    (s.profile.outfit === undefined || (s.profile.outfit && typeof s.profile.outfit === 'object' && !Array.isArray(s.profile.outfit) &&
+      Object.entries(s.profile.outfit).every(([slot, layer]) => ['top', 'bottom', 'shoes', 'accessory'].includes(slot) &&
+        layer && str(layer.gearId) && num(layer.x, -25, 25) && num(layer.y, -25, 25) && num(layer.scale, 0.4, 2))))
   );
 }

@@ -30,7 +30,10 @@ export type Plan = {
   gear: string[];
   done: boolean;
 };
+export type OutfitLayer = { gearId: string; x: number; y: number; scale: number };
+export type OutfitSlot = 'top' | 'bottom' | 'shoes' | 'accessory';
 export type Profile = {
+  outfit?: Partial<Record<OutfitSlot, OutfitLayer>>;
   height: number;
   weight: number;
   face: number;

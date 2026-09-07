@@ -15,7 +15,7 @@ export function validImageUrl(value: unknown): value is string {
     return false;
   }
 }
-export async function uploadGearImage(file: File): Promise<string> {
+export async function uploadGearImage(file: File, options: { removeBackground?: boolean; progress?: (s: string) => void } = {}): Promise<string> {
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type))
     throw Error('请选择 JPG、PNG 或 WebP 图片。');
   if (file.size > 10 * 1024 * 1024) throw Error('单张图片请小于 10 MB。');
@@ -29,14 +29,17 @@ export async function uploadGearImage(file: File): Promise<string> {
     bitmap.close();
     throw Error('无法处理图片，请重试。');
   }
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
+  const rgba = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  let transparent = 0;
+  for (let i = 3; i < rgba.length; i += 4) if (rgba[i] < 240) transparent++;
+  const alreadyCut = transparent > canvas.width * canvas.height * 0.01;
+  const processed = options.removeBackground === false || alreadyCut ? canvas : await (await import('./cutout')).cutout(canvas, options.progress || (() => {}));
   const blob = await new Promise<Blob>((resolve, reject) =>
-    canvas.toBlob(
+    processed.toBlob(
       (b) => (b ? resolve(b) : reject(Error('无法处理图片'))),
-      'image/jpeg',
+      'image/png',
       0.87,
     ),
   );
@@ -47,7 +50,7 @@ export async function uploadGearImage(file: File): Promise<string> {
     reader.readAsDataURL(blob);
   });
   const form = new FormData();
-  form.set('file', blob, 'gear.jpg');
+  form.set('file', blob, 'gear.png');
   const res = await fetch('/api/images', { method: 'POST', body: form });
   const result = (await res.json()) as { url: string; error?: string };
   if (!res.ok) throw Error(result.error || '图片上传失败');
