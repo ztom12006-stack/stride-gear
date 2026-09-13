@@ -32,6 +32,16 @@ export type Plan = {
 };
 export type OutfitLayer = { gearId: string; x: number; y: number; scale: number };
 export type OutfitSlot = 'top' | 'bottom' | 'shoes' | 'accessory';
+export type SavedOutfit = {
+  id: string;
+  name: string;
+  sport: string;
+  gear: string[];
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+  profile?: Profile;
+};
 export type Profile = {
   outfit?: Partial<Record<OutfitSlot, OutfitLayer>>;
   height: number;
@@ -44,12 +54,16 @@ export type Profile = {
   bottom: string;
   shoes: string;
   accessory: boolean;
+  displayName?: string;
+  handle?: string;
+  tagline?: string;
 };
 export type State = {
   gear: Gear[];
   workouts: Workout[];
   plans: Plan[];
   profile: Profile;
+  outfits?: SavedOutfit[];
 };
 export const sports = ['跑步', '健身', '骑行', '徒步', '网球', '其他'];
 export const categories = ['鞋履', '上装', '下装', '装备'];
@@ -182,6 +196,10 @@ export function seed(): State {
       bottom: '#343945',
       shoes: '#c3ec62',
       accessory: false,
+      displayName: '我的运动档案',
+      handle: 'STRIDE MEMBER',
+      tagline: '装备会记录每一次出发。',
     },
+    outfits: [],
   };
 }

@@ -24,6 +24,7 @@ import {
   Timer,
   Mountain,
   CheckCircle2,
+  Sparkles,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -72,7 +73,7 @@ import {
   type Profile,
   type Plan,
 } from '@/lib/model';
-import { isPages, assetUrl } from '@/lib/runtime';
+import { isPages, usesServerState, assetUrl } from '@/lib/runtime';
 import { readLocal, writeLocal } from '@/lib/local-state';
 import BackupControls from './backup-controls';
 import Doll from './doll';
@@ -81,6 +82,11 @@ import { OutfitPicker } from './outfit-picker';
 import ActivityDashboard from './activity-dashboard';
 import { GearPhoto, PhotoEditor } from './gear-photo';
 import OrderImporter from './order-importer';
+import { OutfitSaveDialog } from './outfit-save-dialog';
+import { OutfitLibrary } from './outfit-library';
+import { SharePage } from './share-page';
+import { createSharePayload, decodeSharePayload, encodeSharePayload, type SharePayload } from '@/lib/share';
+import { equip, slots } from '@/lib/outfit';
 const money = (n: number) =>
   '¥' +
   n.toLocaleString('zh-CN', {
@@ -92,6 +98,7 @@ const iconFor = (c: string) =>
 const nav = [
   { id: 'overview', name: '装备总览', icon: Layers },
   { id: 'gear', name: '我的装备', icon: Package },
+  { id: 'looks', name: '套装与分享', icon: Sparkles },
   { id: 'plans', name: '使用计划', icon: CalendarDays },
   { id: 'stats', name: '运动与成本', icon: ChartNoAxesColumn },
   { id: 'discover', name: '装备发现', icon: Compass },
@@ -150,7 +157,7 @@ function Nav({
         <SidebarMenu>
           {nav.map((n, i) => (
             <SidebarMenuItem key={n.id}>
-              {i === 4 && (
+              {i === 5 && (
                 <div className="nav-caption second-caption">发现与灵感</div>
               )}
               <SidebarMenuButton
@@ -211,7 +218,9 @@ export default function GearApp() {
     [audience, setAudience] = useState('日常入门'),
     [budget, setBudget] = useState('不限预算');
   const [importOpen, setImportOpen] = useState(false),
-    [recordDate, setRecordDate] = useState(today());
+    [recordDate, setRecordDate] = useState(today()),
+    [outfitSaveOpen, setOutfitSaveOpen] = useState(false),
+    [sharePayload, setSharePayload] = useState<SharePayload | null>(null);
   const busy = useRef(false);
   const setPage = (id: string) => {
     setPageRaw(id);
@@ -221,8 +230,8 @@ export default function GearApp() {
     setLoading(true);
     setError('');
     try {
-      const res = isPages ? null : await fetch('/api/state');
-      const data = (isPages ? await readLocal() : await res!.json()) as {
+      const res = usesServerState ? await fetch('/api/state') : null;
+      const data = (usesServerState ? await res!.json() : await readLocal()) as {
         state: State;
         revision: number;
         error?: string;
@@ -239,8 +248,17 @@ export default function GearApp() {
   }
   useEffect(() => {
     void load();
-    const h = window.location.hash.slice(1);
-    if (nav.some((n) => n.id === h)) setPageRaw(h);
+    const syncHash = () => {
+      const h = window.location.hash.slice(1);
+      if (h.startsWith('share=')) {
+        const payload = decodeSharePayload(h.slice(6));
+        if (payload) { setSharePayload(payload); setPageRaw('share'); return; }
+      }
+      if (nav.some((n) => n.id === h)) setPageRaw(h);
+    };
+    syncHash();
+    window.addEventListener('hashchange', syncHash);
+    return () => window.removeEventListener('hashchange', syncHash);
   }, []);
   useEffect(() => {
     if (notice) {
@@ -254,12 +272,12 @@ export default function GearApp() {
     setSaving(true);
     setError('');
     try {
-      const r = isPages ? null : await fetch('/api/state', {
+      const r = usesServerState ? await fetch('/api/state', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ state: next, revision }),
-      });
-      const d = (isPages ? await writeLocal(next, revision) : await r!.json()) as { revision: number; error?: string };
+      }) : null;
+      const d = (usesServerState ? await r!.json() : await writeLocal(next, revision)) as { revision: number; error?: string };
       if (r && !r.ok) throw Error(d.error);
       setState(next);
       setRevision(d.revision);
@@ -282,6 +300,34 @@ export default function GearApp() {
     setFromPlan(plan);
     setRecordDate(today());
     setModal(kind);
+  }
+  function saveOutfit(input: { name: string; sport: string; note?: string }) {
+    if (!state) return;
+    const gear = [...new Set(Object.values(profile.outfit || {}).map((layer) => layer.gearId))];
+    const stamp = today();
+    const outfit = { id: crypto.randomUUID(), ...input, gear, createdAt: stamp, updatedAt: stamp, profile };
+    void save({ ...state, profile, outfits: [...(state.outfits || []), outfit] }, `已保存「${outfit.name}」`);
+    setOutfitSaveOpen(false);
+  }
+  function useOutfit(outfit: import('@/lib/model').SavedOutfit) {
+    if (!state) return;
+    let next = outfit.profile || { ...profile };
+    if (!outfit.profile) {
+      for (const slot of slots) {
+        const item = state.gear.find((gear) => outfit.gear.includes(gear.id) && gear.category === slot.category && !gear.archived);
+        if (item) next = equip(next, slot.key, item);
+      }
+    }
+    setProfile(next);
+    setPage('studio');
+    setNotice(`已载入「${outfit.name}」`);
+  }
+  function openShare(outfit: import('@/lib/model').SavedOutfit) {
+    if (!state) return;
+    const payload = createSharePayload(state, outfit);
+    setSharePayload(payload);
+    window.history.pushState(null, '', `#share=${encodeSharePayload(payload)}`);
+    setPageRaw('share');
   }
   const active = state?.gear.filter((g) => !g.archived) || [];
   const total = state?.gear.reduce((s, g) => s + g.price, 0) || 0;
@@ -351,7 +397,7 @@ export default function GearApp() {
             <SidebarTrigger className="mobile-trigger" />
             <span>我的空间</span>
             <ChevronRight size={14} />
-            <b>{nav.find((n) => n.id === page)?.name}</b>
+            <b>{page === 'share' ? '运动分享卡' : nav.find((n) => n.id === page)?.name}</b>
           </div>
           <div className="topbar-right">
             <span className="status-dot" />
@@ -388,6 +434,7 @@ export default function GearApp() {
             </div>
           ) : (
             <>
+              {page !== 'share' && <>
               <div className="page-heading">
                 <div>
                   <div className="eyebrow">
@@ -395,6 +442,8 @@ export default function GearApp() {
                       ? 'EXPLORE YOUR NEXT MOVE'
                       : page === 'studio'
                         ? 'THE FIT LAB'
+                        : page === 'looks'
+                          ? 'YOUR PERSONAL LOOKBOOK'
                         : 'YOUR PERSONAL GEAR SPACE'}
                   </div>
                   <h1>
@@ -407,6 +456,8 @@ export default function GearApp() {
                       ? '记录每一次出发，让热爱看得见。'
                       : page === 'gear'
                         ? '从第一双跑鞋，到每一次新的开始。'
+                        : page === 'looks'
+                          ? '把常穿组合留下来，也把它分享成自己的运动故事。'
                         : page === 'plans'
                           ? '为下一次出发，提前准备好。'
                           : page === 'stats'
@@ -434,7 +485,9 @@ export default function GearApp() {
                         : page === 'stats'
                           ? open('workout')
                           : page === 'studio'
-                            ? save({ ...state, profile }, '人物与搭配已保存')
+                            ? setOutfitSaveOpen(true)
+                            : page === 'looks'
+                              ? setPage('studio')
                             : open('gear')
                     }
                   >
@@ -444,7 +497,9 @@ export default function GearApp() {
                       : page === 'stats'
                         ? '记录运动'
                         : page === 'studio'
-                          ? '保存形象与搭配'
+                          ? '保存为套装'
+                          : page === 'looks'
+                            ? '新建套装'
                           : '添加装备'}
                   </button>
                 </div>
@@ -455,6 +510,7 @@ export default function GearApp() {
                   当前展示示例装备与运动记录。首次保存后写入你的私人空间，可逐件编辑或归档。
                 </div>
               )}
+              </>}
               {page === 'overview' && (
                 <section className="metrics">
                   <div>
@@ -670,6 +726,9 @@ export default function GearApp() {
                     </div>
                   )}
                 </>
+              )}
+              {page === 'looks' && (
+                <OutfitLibrary state={state} onOpenStudio={() => setPage('studio')} onUseOutfit={useOutfit} onShare={openShare} />
               )}
               {page === 'plans' && (
                 <div className="plan-grid">
@@ -975,6 +1034,11 @@ export default function GearApp() {
                       </TabsContent>
                       <TabsContent value="body">
                         <h2>建立你的运动形象</h2>
+                        <div className="profile-fields">
+                          <label>档案名称<input maxLength={200} value={profile.displayName || ''} placeholder="例如：小海" onChange={(e) => setProfile({ ...profile, displayName: e.target.value })} /></label>
+                          <label>档案标签<input maxLength={200} value={profile.handle || ''} placeholder="例如：BADMINTON NERD" onChange={(e) => setProfile({ ...profile, handle: e.target.value })} /></label>
+                          <label className="profile-fields-wide">一句介绍<input maxLength={200} value={profile.tagline || ''} placeholder="例如：右手 / 后场重杀 / 控网抢攻" onChange={(e) => setProfile({ ...profile, tagline: e.target.value })} /></label>
+                        </div>
                         <div className="form-grid">
                           <label>
                             身高 / cm
@@ -1077,16 +1141,15 @@ export default function GearApp() {
                     <button
                       className="primary full"
                       disabled={saving}
-                      onClick={() =>
-                        save({ ...state, profile }, '人物与搭配已保存')
-                      }
+                      onClick={() => setOutfitSaveOpen(true)}
                     >
                       <Check size={17} />
-                      保存这套搭配
+                      保存为套装
                     </button>
                   </section>
                 </div>
               )}
+              {page === 'share' && sharePayload && <SharePage payload={sharePayload} onBack={() => { setSharePayload(null); setPage('looks'); }} />}
               <footer className="page-footer">
                 <span>STRIDE · 每一次出发，都算数。</span>
                 <span>PERSONAL GEAR / EVERYDAY MOVEMENT</span>
@@ -1108,6 +1171,7 @@ export default function GearApp() {
           }
         />
       )}
+      {state && <OutfitSaveDialog open={outfitSaveOpen} defaultSport={active[0]?.sport || '跑步'} itemCount={Object.values(profile.outfit || {}).length} onClose={() => setOutfitSaveOpen(false)} onSave={saveOutfit} />}
       <Dialog
         open={modal !== null}
         onOpenChange={(o) => {

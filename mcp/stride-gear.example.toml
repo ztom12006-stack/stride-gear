@@ -1,0 +1,8 @@
+# Copy this block into ~/.codex/config.toml (or .codex/config.toml in this project).
+# Replace the command path with the absolute path to your local clone.
+[mcp_servers.stride_gear]
+command = "node"
+args = ["C:/path/to/stride-gear/server/mcp-stdio.mjs"]
+
+# In Codex, this asks for confirmation before tools that modify your equipment data.
+default_tools_approval_mode = "writes"

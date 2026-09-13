@@ -1,0 +1,8 @@
+services:
+  stride:
+    build: .
+    ports:
+      - "127.0.0.1:4173:4173"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

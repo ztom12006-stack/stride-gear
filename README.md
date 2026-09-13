@@ -1,6 +1,6 @@
 # STRIDE · 运动装备管家
 
-纯 GitHub Pages 版本，不使用 ChatGPT 托管、数据库或图片存储。
+公开 GitHub Pages 版本不使用 ChatGPT 托管、数据库或图片存储；另提供完全在个人电脑运行的 Docker + SQLite 版本，以及本地 MCP 工具入口。
 
 ## 功能与保存方式
 
@@ -22,6 +22,42 @@ npm run build:pages
 ```
 
 构建结果位于 `dist-pages/`，路径前缀为 `/stride-gear/`。
+
+## 离线安装
+
+GitHub Pages 版本会缓存应用外壳，支持在手机或电脑浏览器中“安装应用”后离线打开。装备、套装、运动记录和上传的抠图仍保存在当前浏览器的 IndexedDB；离线时可以继续查看和编辑，重新联网后不会自动上传这些数据。
+
+应用新增“套装与分享”页：在穿搭实验室选好装备后保存为套装，可反复载入，并生成一张运动档案风格的分享页。分享链接包含档案文案、身体参数、装备文字与统计摘要；本机上传的图片不会写入链接。
+
+## 在电脑本地部署（Docker + SQLite）
+
+这个版本适合希望把记录保存在自己的电脑、同时离线使用的人。需要 Docker Desktop：
+
+```sh
+docker compose up -d --build
+```
+
+打开 http://127.0.0.1:4173 。数据保存在项目目录的 `data/stride.sqlite`，容器更新或重建不会清空它。默认只监听本机地址，不向局域网或互联网公开，也不需要账号或权限服务。
+
+停止服务：
+
+```sh
+docker compose down
+```
+
+不使用 Docker 时，也可以安装 Node.js 24 后运行：
+
+```sh
+npm ci
+npm run build:self
+npm run start:self
+```
+
+## 用 Codex / ChatGPT Desktop 操作本地装备
+
+`server/mcp-stdio.mjs` 是本地 MCP 服务，会直接读取和修改同一份 SQLite 数据。将 [mcp/stride-gear.example.toml](mcp/stride-gear.example.toml) 中的示例复制到 `~/.codex/config.toml` 或本项目的 `.codex/config.toml`，把 `C:/path/to/stride-gear` 换成实际绝对路径；然后重启 Codex 或 ChatGPT Desktop。
+
+它提供读取装备库与运动摘要、添加/编辑/归档装备、记录运动、保存套装等工具。配置中的 `default_tools_approval_mode = "writes"` 会让写入本地记录时请求确认。MCP 服务不会启动网络端口，不会将装备或图片发送到外部。ChatGPT 网页版无法访问你电脑上的本地 MCP 配置。
 
 ## GitHub Pages 发布
 

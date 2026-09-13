@@ -1,7 +1,7 @@
-import { isPages } from './runtime.ts';
+import { isPages, isSelfHosted } from './runtime.ts';
 export function validImageUrl(value: unknown): value is string {
   if (typeof value !== 'string') return false;
-  if (isPages && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/.test(value) && value.length < 7000000) return true;
+  if ((isPages || isSelfHosted) && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/.test(value) && value.length < 7000000) return true;
   if (value.length > 2000) return false;
   if (
     value === '' ||
@@ -43,7 +43,7 @@ export async function uploadGearImage(file: File, options: { removeBackground?: 
       0.87,
     ),
   );
-  if (isPages) return new Promise((resolve, reject) => {
+  if (isPages || isSelfHosted) return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = () => reject(Error('图片保存失败'));

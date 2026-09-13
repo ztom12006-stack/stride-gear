@@ -15,6 +15,7 @@ export function validState(s: State) {
     !Array.isArray(s.gear) ||
     !Array.isArray(s.workouts) ||
     !Array.isArray(s.plans) ||
+    (s.outfits !== undefined && !Array.isArray(s.outfits)) ||
     s.gear.length > 1000 ||
     s.workouts.length > 20000 ||
     s.plans.length > 2000
@@ -46,6 +47,20 @@ export function validState(s: State) {
         (g.importKey === undefined || str(g.importKey)) &&
         (g.source === undefined || str(g.source)),
     ) &&
+    (s.outfits === undefined ||
+      (s.outfits.length <= 500 &&
+        s.outfits.every(
+          (o) =>
+            str(o.id) &&
+            str(o.name) &&
+            o.name.trim() &&
+            sports.includes(o.sport) &&
+            refs(o.gear) &&
+            date(o.createdAt) &&
+            date(o.updatedAt) &&
+            (o.note === undefined || str(o.note)) &&
+            (o.profile === undefined || (o.profile && typeof o.profile === 'object' && !Array.isArray(o.profile))),
+        ))) &&
     s.workouts.every(
       (w) =>
         str(w.id) &&
@@ -74,6 +89,9 @@ export function validState(s: State) {
       color,
     ) &&
     typeof s.profile.accessory === 'boolean' &&
+    (s.profile.displayName === undefined || str(s.profile.displayName)) &&
+    (s.profile.handle === undefined || str(s.profile.handle)) &&
+    (s.profile.tagline === undefined || str(s.profile.tagline)) &&
     (s.profile.outfit === undefined || (s.profile.outfit && typeof s.profile.outfit === 'object' && !Array.isArray(s.profile.outfit) &&
       Object.entries(s.profile.outfit).every(([slot, layer]) => ['top', 'bottom', 'shoes', 'accessory'].includes(slot) &&
         layer && str(layer.gearId) && num(layer.x, -25, 25) && num(layer.y, -25, 25) && num(layer.scale, 0.4, 2))))
