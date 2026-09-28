@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import {
   Activity,
   ArrowUpRight,
@@ -329,7 +329,7 @@ export default function GearApp() {
     window.history.pushState(null, '', `#share=${encodeSharePayload(payload)}`);
     setPageRaw('share');
   }
-  const active = state?.gear.filter((g) => !g.archived) || [];
+  const active = useMemo(() => state?.gear.filter((g) => !g.archived) || [], [state?.gear]);
   const total = state?.gear.reduce((s, g) => s + g.price, 0) || 0;
   const runs = state?.workouts || [];
   const km = runs.reduce((s, w) => s + w.km, 0);
@@ -1020,7 +1020,7 @@ export default function GearApp() {
                       </span>
                     </div>
                     <GameCharacter profile={profile} gear={active} />
-                    <div className="stage-caption">选择装备探索配色；切换「照片换装」查看实物图片的搭配。效果用于穿搭参考，不代表真实尺码贴合。</div>
+                    <div className="stage-caption">比例人台看配色，装备平铺看组合。人台使用通用版型，不代表实物剪裁或尺码贴合。</div>
                   </section>
                   <section className="studio-controls">
                     <Tabs defaultValue="outfit">
